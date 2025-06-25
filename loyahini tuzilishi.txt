@@ -1,0 +1,17 @@
+
+📁 ai-chat-project/
+├── 📄 index.html               # Foydalanuvchi interfeysi (frontend) - AI chat dizayni va funksiyasi
+├── 📄 server.js                # Node.js backend server kodi - API kalit orqali OpenAI bilan ishlaydi
+├── 📄 .env                     # API kalit saqlanadigan yashirin fayl (masalan, OPENAI_API_KEY=sk-...)
+├── 📄 package.json             # Node.js loyihasining konfiguratsiyasi (npm init orqali yaratiladi)
+└── 📁 node_modules/            # npm orqali o‘rnatilgan kutubxonalar (express, dotenv, cors, node-fetch)
+
+👉 Ishga tushirish:
+1. `npm init -y`            // package.json yaratish
+2. `npm install express cors dotenv node-fetch`
+3. `.env` fayl yarating va quyidagilarni yozing:
+    OPENAI_API_KEY=sk-... (OpenAI'dan olingan kalitingiz)
+4. `node server.js`         // backend serverni ishga tushuradi
+5. `index.html` faylni Live Server orqali oching
+
+✅ Natija: Siz AI bilan muloqot qiladigan o‘z shaxsiy chat botingizga ega bo‘lasiz.

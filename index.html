@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Chat Assistant</title>
+  <!-- Tailwind CSS ulanishi -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .chat-container {
+      height: calc(100vh - 200px); /* Chat oynasi balandligi */
+    }
+    .message-animation {
+      animation: slideIn 0.3s ease-out; /* Yangi xabar chiqish animatsiyasi */
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px); /* Pastdan chiqadi */
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Sarlavha -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">AI Chat Assistant</h1>
+        <p class="text-gray-600">Ask me anything and I'll help you out!</p>
+      </div>
+
+      <!-- Chat qutisi -->
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div id="chat-content" class="chat-container overflow-y-auto p-6 space-y-4">
+          <div class="max-w-md break-words px-4 py-2 rounded-full bg-gray-100 text-gray-800 mr-auto message-animation">
+            Hello! I'm your AI assistant. How can I help you today?
+          </div>
+        </div>
+
+        <!-- Input form -->
+        <div class="border-t border-gray-200 p-4">
+          <form id="chat-form" class="flex gap-2">
+            <input 
+              type="text"
+              id="user-input"
+              placeholder="Type your message here..."
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autocomplete="off"
+            />
+            <button 
+              type="submit"
+              class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            >
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Yuklanish indikator -->
+      <div id="loading" class="hidden text-center mt-4">
+        <div class="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full">
+          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+          <span class="text-gray-600">AI is thinking...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript qismi -->
+  <script>
+    const chatContent = document.getElementById("chat-content");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const loadingIndicator = document.getElementById("loading");
+
+    // Yangi xabar yaratish
+    function createMessageElement(message, fromUser) {
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("max-w-md", "break-words", "px-4", "py-2", "rounded-full", "message-animation");
+      messageElement.classList.add(fromUser ? "bg-blue-500" : "bg-gray-100");
+      messageElement.classList.add(fromUser ? "text-white" : "text-gray-800");
+      messageElement.classList.add(fromUser ? "ml-auto" : "mr-auto");
+      messageElement.textContent = message;
+      return messageElement;
+    }
+
+    // AI javobini olish
+    async function fetchResponse(userMessage) {
+      try {
+        const response = await fetch("http://localhost:3000/api/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ message: userMessage })
+        });
+
+        // Javobni tekshirish
+        if (!response.ok) {
+          console.error("Server xatosi:", response.status, response.statusText);
+          return "Serverda xatolik yuz berdi.";
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.reply) {
+          console.error("Reply topilmadi:", data);
+          return "AI javob topa olmadi.";
+        }
+
+        return data.reply;
+      } catch (error) {
+        console.error("Ulanishda xato:", error);
+        return "AI bilan bog‘lanishda xatolik yuz berdi.";
+      }
+    }
+
+    // Chat oynasini pastga aylantirish
+    function scrollToBottom() {
+      chatContent.scrollTop = chatContent.scrollHeight;
+    }
+
+    // Foydalanuvchi yuborgan formani tutish
+    chatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const userMessage = userInput.value.trim();
+      if (!userMessage) return;
+
+      chatContent.appendChild(createMessageElement(userMessage, true));
+      userInput.value = "";
+      scrollToBottom();
+      loadingIndicator.classList.remove("hidden");
+
+      const botResponse = await fetchResponse(userMessage);
+
+      loadingIndicator.classList.add("hidden");
+      chatContent.appendChild(createMessageElement(botResponse, false));
+      scrollToBottom();
+    });
+
+    // Enter bosilganda formani yuborish
+    userInput.addEventListener("keypress", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        chatForm.dispatchEvent(new Event("submit"));
+      }
+    });
+
+    // Sahifa yuklanganda inputga fokus berish
+    window.addEventListener("load", () => {
+      userInput.focus();
+    });
+  </script>
+</body>
+</html>
